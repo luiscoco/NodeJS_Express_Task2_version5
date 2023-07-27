@@ -23,6 +23,8 @@ app.use(function (req, res, next) {
     next();
 });
 
+const uid = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+
 function getNotesFromDatabase(req) {
     return req.session.notes || [];
 }
@@ -68,7 +70,8 @@ app.get("/notes", async function (req, res) {
 app.post("/notes", async function (req, res) {
     try {
         let note = req.body;
-        req.session.notes.push({ id: Date.now(), text: note.text });
+        note.id = uid(); // Generate a unique id for the note
+        req.session.notes.push(note);
         console.log("added note", req.session.notes);
 
         // Save notes to the file
@@ -83,8 +86,9 @@ app.post("/notes", async function (req, res) {
 
 app.delete("/notes/:id", async function (req, res) {
     try {
-        const noteId = parseInt(req.params.id);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const noteId = req.params.id;
+
+        // Find the note by its id and remove it from the list of notes
         req.session.notes = req.session.notes.filter((note) => note.id !== noteId);
         console.log("deleted note", req.session.notes);
 
